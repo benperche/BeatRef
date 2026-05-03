@@ -250,6 +250,15 @@ const SEED_SONGS = [
     notes: 'BPM applies to the opening ballad section.',
     createdAt: 5,
   },
+  {
+  id: 'seed-7',
+  title: 'In My Room',
+  artist: 'Jacob Collier',
+  bpm: 62,
+  youtube: 'https://youtu.be/7dSFMUcTuhU?si=_355HCwxGTDdZ4cP&t=15',
+  notes: '',
+  createdAt: 6,
+},
 ];
 
 function loadSongs() {

@@ -36,15 +36,6 @@ Click any song card to open the player. The YouTube video and metronome are side
 - Use `−` / `+` to fine-tune the BPM against what you're hearing.
 - The adjusted BPM is for your session only — edit the card to save a different value permanently.
 
-## Deploying to GitHub Pages
-
-The site is entirely static (HTML + CSS + JS). To host it:
-
-1. Push this repo to GitHub.
-2. Go to **Settings → Pages**.
-3. Set Source to `Deploy from a branch`, branch `main`, folder `/ (root)`.
-4. Your site will be live at `https://<username>.github.io/BeatRef`.
-
 ## Tech
 
 | Concern | Approach |
@@ -62,7 +53,7 @@ No frameworks, no bundler, no dependencies.
 | Song | Artist | BPM |
 |---|---|---|
 | Bohemian Rhapsody | Queen | 76 |
-| Stayin' Alive | Bee Gees | 100 |
+| Stayin' Alive | Bee Gees | 104 |
 | Eye of the Tiger | Survivor | 109 |
 | Billie Jean | Michael Jackson | 117 |
 | We're Off to See the Wizard | Judy Garland | 138 |
