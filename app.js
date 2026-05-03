@@ -94,12 +94,25 @@ class Metronome {
     this._ctx = new (window.AudioContext || window.webkitAudioContext)();
     this._nextTime = this._ctx.currentTime + 0.05;
     this.isPlaying = true;
+    // Resume AudioContext when tab regains focus (browsers suspend it on hide)
+    this._onVisible = () => {
+      if (document.visibilityState === 'visible' && this._ctx?.state === 'suspended') {
+        this._ctx.resume().then(() => {
+          this._nextTime = this._ctx.currentTime + 0.05;
+        });
+      }
+    };
+    document.addEventListener('visibilitychange', this._onVisible);
     this._schedule();
   }
 
   stop() {
     this.isPlaying = false;
     clearTimeout(this._timerId);
+    if (this._onVisible) {
+      document.removeEventListener('visibilitychange', this._onVisible);
+      this._onVisible = null;
+    }
     if (this._ctx) {
       this._ctx.close().catch(() => {});
       this._ctx = null;
@@ -672,20 +685,13 @@ function openStandaloneMetro() {
     setTimeout(() => ring.classList.remove('pulse'), 80);
   });
   saState.metronome.setBpm(bpm);
-  document.getElementById('sa-tap-feedback').classList.remove('active');
   document.getElementById('sa-tap-detected').textContent = '–';
   document.getElementById('sa-tap-accept-btn').disabled = true;
   saState.tapDetectedBpm = null;
   saState.tapTempo = new TapTempo((detectedBpm, count) => {
-    const fb = document.getElementById('sa-tap-feedback');
-    if (detectedBpm === null) {
-      fb.classList.remove('active');
-      document.getElementById('sa-tap-detected').textContent = '–';
-      document.getElementById('sa-tap-accept-btn').disabled = true;
-      saState.tapDetectedBpm = null;
-      return;
-    }
-    fb.classList.add('active');
+    // Ignore the 2-second auto-reset — keep the last result visible so the
+    // user has time to press "Use this BPM" without it disappearing.
+    if (detectedBpm === null) return;
     document.getElementById('sa-tap-detected').textContent = detectedBpm;
     saState.tapDetectedBpm = detectedBpm;
     document.getElementById('sa-tap-accept-btn').disabled = count < 3;
@@ -1008,6 +1014,11 @@ function init() {
   });
 
   document.getElementById('sa-tap-btn').addEventListener('click', () => {
+    // Stop the metronome the moment you start tapping so you can hear clearly
+    if (saState.metronome?.isPlaying) {
+      saState.metronome.stop();
+      setSaMetroStopped();
+    }
     document.getElementById('sa-tap-btn').classList.add('tapping');
     setTimeout(() => document.getElementById('sa-tap-btn').classList.remove('tapping'), 120);
     saState.tapTempo?.tap();
@@ -1018,6 +1029,10 @@ function init() {
     document.getElementById('sa-metro-bpm').textContent = bpm;
     document.getElementById('sa-bpm-hint').textContent = bpmHint(bpm);
     if (saState.metronome) saState.metronome.setBpm(bpm);
+    // Reset tap display after accepting
+    document.getElementById('sa-tap-detected').textContent = '–';
+    document.getElementById('sa-tap-accept-btn').disabled = true;
+    saState.tapDetectedBpm = null;
     saState.tapTempo?.reset();
   });
 

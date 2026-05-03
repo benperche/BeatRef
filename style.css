@@ -853,6 +853,14 @@ main {
   gap: 20px;
 }
 
+/* Tap feedback panel is always visible in the standalone metro so the
+   button never shifts position and "Use this BPM" stays reachable */
+#sa-tap-feedback {
+  opacity: 1;
+  pointer-events: auto;
+  width: 100%;
+}
+
 .sa-space-hint {
   font-size: 0.72rem;
   color: var(--text-dim);
