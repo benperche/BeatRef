@@ -123,14 +123,18 @@
           <div id="youtube-player-wrap">
             <!-- YouTube IFrame inserted here -->
           </div>
+          <div id="spotify-player-wrap" hidden>
+            <!-- Spotify IFrame inserted here -->
+          </div>
           <div class="no-video-msg" id="no-video-msg" hidden>
             <svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="8" fill="currentColor" opacity="0.1"/><path d="M19 15l14 9-14 9V15z" fill="currentColor" opacity="0.4"/></svg>
-            <p>No video linked</p>
-            <button class="btn btn-ghost btn-sm" id="player-add-video-btn">Add YouTube URL</button>
+            <p>No media linked</p>
+            <button class="btn btn-ghost btn-sm" id="player-add-video-btn">Add media link</button>
           </div>
-          <a class="yt-open-link" id="yt-open-link" href="#" target="_blank" rel="noopener" hidden>
-            Open in YouTube ↗
-          </a>
+          <div class="media-open-links">
+            <a class="media-open-link" id="spotify-open-link" href="#" target="_blank" rel="noopener" hidden>Open in Spotify ↗</a>
+            <a class="media-open-link" id="yt-open-link" href="#" target="_blank" rel="noopener" hidden>Open in YouTube ↗</a>
+          </div>
         </div>
 
         <div class="metronome-panel">
@@ -218,6 +222,12 @@
           </div>
           <p class="tap-hint">Keep tapping to refine • stops after 2s pause</p>
           <button type="button" class="btn btn-ghost btn-sm" id="tap-accept-btn" disabled>Use this BPM</button>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-spotify">Spotify URL</label>
+          <input type="url" id="edit-spotify" placeholder="https://open.spotify.com/track/…" autocomplete="off">
+          <span class="field-hint">Embeds ad-free in the player — paste any Spotify track link</span>
         </div>
 
         <div class="form-group">

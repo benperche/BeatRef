@@ -59,6 +59,18 @@ function ytEmbedUrl(id, start = 0) {
   return `https://www.youtube.com/embed/${id}?rel=0${s}`;
 }
 
+// ── Spotify helpers ───────────────────────────────────
+function parseSpotifyUrl(url) {
+  if (!url) return { id: null };
+  // handles /intl-xx/ variants and share params
+  const m = url.match(/open\.spotify\.com\/(?:[a-z-]+\/)?track\/([A-Za-z0-9]+)/);
+  return { id: m ? m[1] : null };
+}
+
+function spotifyEmbedUrl(id) {
+  return `https://open.spotify.com/embed/track/${id}?utm_source=generator`;
+}
+
 // ── Precise Metronome (Web Audio API) ─────────────────
 class Metronome {
   constructor(onBeat) {
@@ -255,7 +267,7 @@ const SEED_SONGS = [
   title: 'In My Room',
   artist: 'Jacob Collier',
   bpm: 62,
-  youtube: 'https://youtu.be/7dSFMUcTuhU?si=_355HCwxGTDdZ4cP&t=15',
+  youtube: 'https://youtu.be/7dSFMUcTuhU?si=_355HCwxGTDdZ4cP',
   notes: '',
   createdAt: 6,
 },
@@ -303,7 +315,13 @@ function filteredSongs() {
 
 // ── Render Song Grid ──────────────────────────────────
 function makeCard(song) {
-  const hasVideo = !!extractYTId(song.youtube);
+  const hasYT      = !!extractYTId(song.youtube);
+  const hasSpotify = !!parseSpotifyUrl(song.spotify).id;
+  const hasMedia   = hasYT || hasSpotify;
+  const mediaLabel = hasSpotify && hasYT ? 'Spotify + YouTube'
+                   : hasSpotify          ? 'Spotify linked'
+                   : hasYT               ? 'Video linked'
+                   :                       'No media';
   const card = document.createElement('div');
   card.className = 'song-card';
   card.dataset.id = song.id;
@@ -317,9 +335,9 @@ function makeCard(song) {
       ${song.artist ? `<div class="card-artist">${escHtml(song.artist)}</div>` : ''}
     </div>
     <div class="card-footer">
-      <span class="card-has-video ${hasVideo ? 'linked' : ''}">
+      <span class="card-has-video ${hasMedia ? 'linked' : ''}">
         <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
-        ${hasVideo ? 'Video linked' : 'No video'}
+        ${mediaLabel}
       </span>
       <span class="card-play-hint">Open ›</span>
     </div>
@@ -387,24 +405,47 @@ function openPlayer(id) {
   document.getElementById('player-title').textContent = song.title;
   document.getElementById('player-artist').textContent = song.artist || '';
 
-  // YouTube
-  const { id: ytId } = parseYTUrl(song.youtube);
+  // Media embeds
+  const { id: ytId }      = parseYTUrl(song.youtube);
+  const { id: spotifyId } = parseSpotifyUrl(song.spotify);
   const ytStart = song.youtubeStart || 0;
-  const wrap = document.getElementById('youtube-player-wrap');
-  const noVid = document.getElementById('no-video-msg');
 
-  const ytOpenLink = document.getElementById('yt-open-link');
-  if (ytId) {
-    wrap.innerHTML = `<iframe src="${ytEmbedUrl(ytId, ytStart)}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
-    wrap.hidden = false;
+  const ytWrap      = document.getElementById('youtube-player-wrap');
+  const spotifyWrap = document.getElementById('spotify-player-wrap');
+  const noVid       = document.getElementById('no-video-msg');
+  const ytOpenLink  = document.getElementById('yt-open-link');
+  const spOpenLink  = document.getElementById('spotify-open-link');
+
+  // Spotify embed takes priority (no ads); YouTube embed shown as fallback
+  if (spotifyId) {
+    spotifyWrap.innerHTML = `<iframe src="${spotifyEmbedUrl(spotifyId)}" height="152" frameborder="0" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+    spotifyWrap.hidden = false;
+    ytWrap.innerHTML = '';
+    ytWrap.hidden = true;
     noVid.hidden = true;
+    spOpenLink.href = `https://open.spotify.com/track/${spotifyId}`;
+    spOpenLink.hidden = false;
+  } else if (ytId) {
+    ytWrap.innerHTML = `<iframe src="${ytEmbedUrl(ytId, ytStart)}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+    ytWrap.hidden = false;
+    spotifyWrap.innerHTML = '';
+    spotifyWrap.hidden = true;
+    noVid.hidden = true;
+    spOpenLink.hidden = true;
+  } else {
+    ytWrap.innerHTML = '';
+    ytWrap.hidden = true;
+    spotifyWrap.innerHTML = '';
+    spotifyWrap.hidden = true;
+    noVid.hidden = false;
+    spOpenLink.hidden = true;
+  }
+
+  if (ytId) {
     const ytUrl = `https://www.youtube.com/watch?v=${ytId}${ytStart > 0 ? `&t=${ytStart}` : ''}`;
     ytOpenLink.href = ytUrl;
     ytOpenLink.hidden = false;
   } else {
-    wrap.innerHTML = '';
-    wrap.hidden = true;
-    noVid.hidden = false;
     ytOpenLink.hidden = true;
   }
 
@@ -434,6 +475,7 @@ function closePlayer() {
   document.body.style.overflow = '';
   state.playerSongId = null;
   document.getElementById('youtube-player-wrap').innerHTML = '';
+  document.getElementById('spotify-player-wrap').innerHTML = '';
   history.replaceState({}, '', location.pathname);
 }
 
@@ -483,6 +525,7 @@ function openEdit(id = null) {
   document.getElementById('edit-artist').value = song?.artist || '';
   document.getElementById('edit-bpm').value = song?.bpm || '';
   document.getElementById('edit-youtube').value = song?.youtube || '';
+  document.getElementById('edit-spotify').value = song?.spotify || '';
   document.getElementById('edit-notes').value = song?.notes || '';
 
   document.getElementById('edit-start').value = song?.youtubeStart ?? '';
@@ -547,6 +590,8 @@ function saveSong(e) {
   const autoStart = parseYTUrl(youtubeUrl).start;
   const youtubeStart = Number.isFinite(manualStart) && manualStart >= 0 ? manualStart : autoStart;
 
+  const spotifyUrl = document.getElementById('edit-spotify').value.trim();
+
   const song = {
     id:          state.editSongId || `song-${Date.now()}`,
     title,
@@ -554,6 +599,7 @@ function saveSong(e) {
     bpm,
     youtube:     youtubeUrl,
     youtubeStart,
+    spotify:     spotifyUrl,
     notes:       document.getElementById('edit-notes').value.trim(),
     createdAt:   state.editSongId
                    ? (state.songs.find(s => s.id === state.editSongId)?.createdAt || Date.now())

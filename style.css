@@ -854,17 +854,32 @@ footer a {
 }
 footer a:hover { color: var(--accent-light); }
 
-/* ── Open in YouTube link ────────────────────────────── */
-.yt-open-link {
+/* ── Spotify embed ───────────────────────────────────── */
+#spotify-player-wrap {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+#spotify-player-wrap iframe {
   display: block;
+  width: 100%;
+  border: none;
+}
+
+/* ── Media open links ────────────────────────────────── */
+.media-open-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
   margin-top: 8px;
+}
+
+.media-open-link {
   font-size: 0.75rem;
   color: var(--text-dim);
   text-decoration: none;
-  text-align: right;
   transition: color var(--transition);
 }
-.yt-open-link:hover { color: var(--accent-light); }
+.media-open-link:hover { color: var(--accent-light); }
 
 /* ── Copy-link button ────────────────────────────────── */
 .btn-copy-link {
