@@ -124,6 +124,9 @@
             <p>No video linked</p>
             <button class="btn btn-ghost btn-sm" id="player-add-video-btn">Add YouTube URL</button>
           </div>
+          <a class="yt-open-link" id="yt-open-link" href="#" target="_blank" rel="noopener" hidden>
+            Open in YouTube ↗
+          </a>
         </div>
 
         <div class="metronome-panel">
@@ -248,6 +251,10 @@
       </form>
     </div>
   </div>
+
+  <footer>
+    <p>BeatRef v<span id="app-version"></span> &middot; Created by Ben Perche with <a href="https://claude.ai" target="_blank" rel="noopener">Claude.ai</a></p>
+  </footer>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="app.js"></script>

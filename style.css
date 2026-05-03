@@ -839,6 +839,33 @@ main {
   padding-top: 4px;
 }
 
+/* ── Footer ──────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border);
+}
+
+footer a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+footer a:hover { color: var(--accent-light); }
+
+/* ── Open in YouTube link ────────────────────────────── */
+.yt-open-link {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  text-align: right;
+  transition: color var(--transition);
+}
+.yt-open-link:hover { color: var(--accent-light); }
+
 /* ── Copy-link button ────────────────────────────────── */
 .btn-copy-link {
   background: transparent;

@@ -1,5 +1,7 @@
 'use strict';
 
+const VERSION = '1.0';
+
 // ── Storage ───────────────────────────────────────────
 const DB = {
   KEY: 'beatref-songs',
@@ -382,14 +384,19 @@ function openPlayer(id) {
   const wrap = document.getElementById('youtube-player-wrap');
   const noVid = document.getElementById('no-video-msg');
 
+  const ytOpenLink = document.getElementById('yt-open-link');
   if (ytId) {
     wrap.innerHTML = `<iframe src="${ytEmbedUrl(ytId, ytStart)}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
     wrap.hidden = false;
     noVid.hidden = true;
+    const ytUrl = `https://www.youtube.com/watch?v=${ytId}${ytStart > 0 ? `&t=${ytStart}` : ''}`;
+    ytOpenLink.href = ytUrl;
+    ytOpenLink.hidden = false;
   } else {
     wrap.innerHTML = '';
     wrap.hidden = true;
     noVid.hidden = false;
+    ytOpenLink.hidden = true;
   }
 
   // Metronome setup
@@ -656,6 +663,8 @@ function init() {
   }
 
   renderGrid();
+
+  document.getElementById('app-version').textContent = VERSION;
 
   // Add song buttons
   document.getElementById('add-song-btn').addEventListener('click', () => openEdit());
