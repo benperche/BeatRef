@@ -648,6 +648,15 @@ function importLibrary(file) {
   reader.readAsText(file);
 }
 
+// ── Reset ─────────────────────────────────────────────
+function resetLibrary() {
+  if (!confirm('Reset to default examples? This will delete all your songs and cannot be undone.')) return;
+  localStorage.removeItem(DB.KEY);
+  loadSongs();
+  renderGrid();
+  showToast('Library reset to defaults.');
+}
+
 // ── Debounce ──────────────────────────────────────────
 function debounce(fn, ms) {
   let t;
@@ -809,6 +818,8 @@ function init() {
   document.getElementById('import-file').addEventListener('change', e => {
     if (e.target.files[0]) importLibrary(e.target.files[0]);
   });
+
+  document.getElementById('reset-btn').addEventListener('click', resetLibrary);
 
   // ── Copy link (share BPM)
   document.getElementById('copy-link-btn').addEventListener('click', () => {
