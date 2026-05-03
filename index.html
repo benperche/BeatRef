@@ -35,6 +35,14 @@
             <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"/></svg>
             Import
           </button>
+          <button class="btn btn-ghost btn-sm" id="open-metro-btn" title="Open standalone metronome">
+            <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <rect x="2.5" y="7" width="3" height="10" rx="1"/>
+              <rect x="8.5" y="3" width="3" height="14" rx="1"/>
+              <rect x="14.5" y="5" width="3" height="12" rx="1"/>
+            </svg>
+            Metronome
+          </button>
           <button class="btn btn-ghost btn-sm btn-danger-ghost" id="reset-btn" title="Reset to default examples">
             <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"/></svg>
             Reset
@@ -172,6 +180,56 @@
             Share this BPM
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Standalone Metronome Modal ──────────────────── -->
+  <div class="modal-backdrop" id="sa-metro-backdrop" hidden>
+    <div class="modal sa-metro-modal" id="sa-metro-modal" role="dialog" aria-modal="true" aria-label="Metronome">
+      <div class="modal-header">
+        <h2>Metronome</h2>
+        <button class="modal-close" id="sa-metro-close" aria-label="Close">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg>
+        </button>
+      </div>
+      <div class="sa-metro-body">
+        <div class="bpm-readout">
+          <button class="bpm-adj" id="sa-bpm-down" aria-label="Decrease BPM">−</button>
+          <div class="bpm-number-wrap">
+            <span class="bpm-number" id="sa-metro-bpm">120</span>
+            <span class="bpm-label">BPM</span>
+          </div>
+          <button class="bpm-adj" id="sa-bpm-up" aria-label="Increase BPM">+</button>
+        </div>
+
+        <div class="beat-visualizer">
+          <div class="beat-ring" id="sa-beat-ring">
+            <div class="beat-dot"></div>
+          </div>
+        </div>
+
+        <div class="metronome-controls">
+          <button class="btn btn-metro" id="sa-metro-toggle">
+            <svg id="sa-metro-play-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
+            <svg id="sa-metro-stop-icon" viewBox="0 0 20 20" fill="currentColor" hidden><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z"/></svg>
+            <span id="sa-metro-btn-text">Start Metronome</span>
+          </button>
+        </div>
+
+        <div class="bpm-hint" id="sa-bpm-hint"></div>
+
+        <button class="btn btn-tap" id="sa-tap-btn">Tap Tempo</button>
+
+        <div class="tap-feedback" id="sa-tap-feedback">
+          <div class="tap-bpm-display">
+            <span id="sa-tap-detected">–</span> <span>BPM detected</span>
+          </div>
+          <p class="tap-hint">Keep tapping to refine · stops after 2s pause</p>
+          <button type="button" class="btn btn-ghost btn-sm" id="sa-tap-accept-btn" disabled>Use this BPM</button>
+        </div>
+
+        <p class="sa-space-hint">Space to start / stop</p>
       </div>
     </div>
   </div>

@@ -842,6 +842,23 @@ main {
   padding-top: 4px;
 }
 
+/* ── Standalone Metronome Modal ──────────────────────── */
+.sa-metro-modal { max-width: 340px; }
+
+.sa-metro-body {
+  padding: 24px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.sa-space-hint {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  margin-top: -4px;
+}
+
 /* ── Footer ──────────────────────────────────────────── */
 footer {
   text-align: center;

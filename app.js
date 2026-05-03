@@ -659,6 +659,72 @@ function clearYTPreview() {
   document.getElementById('yt-preview').hidden = true;
 }
 
+// ── Standalone Metronome ──────────────────────────────
+const saState = { metronome: null, tapTempo: null, tapDetectedBpm: null };
+
+function openStandaloneMetro() {
+  const bpm = 120;
+  document.getElementById('sa-metro-bpm').textContent = bpm;
+  document.getElementById('sa-bpm-hint').textContent = bpmHint(bpm);
+  saState.metronome = new Metronome(() => {
+    const ring = document.getElementById('sa-beat-ring');
+    ring.classList.add('pulse');
+    setTimeout(() => ring.classList.remove('pulse'), 80);
+  });
+  saState.metronome.setBpm(bpm);
+  document.getElementById('sa-tap-feedback').classList.remove('active');
+  document.getElementById('sa-tap-detected').textContent = '–';
+  document.getElementById('sa-tap-accept-btn').disabled = true;
+  saState.tapDetectedBpm = null;
+  saState.tapTempo = new TapTempo((detectedBpm, count) => {
+    const fb = document.getElementById('sa-tap-feedback');
+    if (detectedBpm === null) {
+      fb.classList.remove('active');
+      document.getElementById('sa-tap-detected').textContent = '–';
+      document.getElementById('sa-tap-accept-btn').disabled = true;
+      saState.tapDetectedBpm = null;
+      return;
+    }
+    fb.classList.add('active');
+    document.getElementById('sa-tap-detected').textContent = detectedBpm;
+    saState.tapDetectedBpm = detectedBpm;
+    document.getElementById('sa-tap-accept-btn').disabled = count < 3;
+  });
+  setSaMetroStopped();
+  document.getElementById('sa-metro-backdrop').hidden = false;
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStandaloneMetro() {
+  if (saState.metronome) { saState.metronome.stop(); saState.metronome = null; }
+  if (saState.tapTempo)  { saState.tapTempo.reset();  saState.tapTempo = null; }
+  setSaMetroStopped();
+  document.getElementById('sa-metro-backdrop').hidden = true;
+  document.body.style.overflow = '';
+}
+
+function setSaMetroPlaying() {
+  document.getElementById('sa-metro-play-icon').hidden = true;
+  document.getElementById('sa-metro-stop-icon').hidden = false;
+  document.getElementById('sa-metro-btn-text').textContent = 'Stop Metronome';
+  document.getElementById('sa-metro-toggle').classList.add('playing');
+}
+
+function setSaMetroStopped() {
+  document.getElementById('sa-metro-play-icon').hidden = false;
+  document.getElementById('sa-metro-stop-icon').hidden = true;
+  document.getElementById('sa-metro-btn-text').textContent = 'Start Metronome';
+  document.getElementById('sa-metro-toggle').classList.remove('playing');
+}
+
+function adjustSaBpm(delta) {
+  const next = Math.max(20, Math.min(300,
+    parseInt(document.getElementById('sa-metro-bpm').textContent, 10) + delta));
+  document.getElementById('sa-metro-bpm').textContent = next;
+  document.getElementById('sa-bpm-hint').textContent = bpmHint(next);
+  if (saState.metronome) saState.metronome.setBpm(next);
+}
+
 // ── Toast ─────────────────────────────────────────────
 function showToast(msg, ms = 2000) {
   const toast = document.getElementById('toast');
@@ -911,18 +977,67 @@ function init() {
     });
   });
 
+  // ── Standalone metronome
+  document.getElementById('open-metro-btn').addEventListener('click', openStandaloneMetro);
+  document.getElementById('sa-metro-close').addEventListener('click', closeStandaloneMetro);
+  document.getElementById('sa-metro-backdrop').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeStandaloneMetro();
+  });
+  document.getElementById('sa-metro-toggle').addEventListener('click', () => {
+    if (!saState.metronome) return;
+    if (saState.metronome.isPlaying) { saState.metronome.stop(); setSaMetroStopped(); }
+    else                              { saState.metronome.start(); setSaMetroPlaying(); }
+  });
+
+  let saHoldTimer, saHoldInterval;
+  function saStartHold(delta) {
+    saHoldTimer = setTimeout(() => {
+      saHoldInterval = setInterval(() => adjustSaBpm(delta), 80);
+    }, 400);
+  }
+  function saStopHold() { clearTimeout(saHoldTimer); clearInterval(saHoldInterval); }
+  ['sa-bpm-down', 'sa-bpm-up'].forEach(id => {
+    const el = document.getElementById(id);
+    const delta = id === 'sa-bpm-up' ? 1 : -1;
+    el.addEventListener('mousedown',  () => saStartHold(delta));
+    el.addEventListener('touchstart', () => saStartHold(delta), { passive: true });
+    el.addEventListener('mouseup',    saStopHold);
+    el.addEventListener('mouseleave', saStopHold);
+    el.addEventListener('touchend',   saStopHold);
+    el.addEventListener('click',      () => adjustSaBpm(delta));
+  });
+
+  document.getElementById('sa-tap-btn').addEventListener('click', () => {
+    document.getElementById('sa-tap-btn').classList.add('tapping');
+    setTimeout(() => document.getElementById('sa-tap-btn').classList.remove('tapping'), 120);
+    saState.tapTempo?.tap();
+  });
+  document.getElementById('sa-tap-accept-btn').addEventListener('click', () => {
+    if (!saState.tapDetectedBpm) return;
+    const bpm = saState.tapDetectedBpm;
+    document.getElementById('sa-metro-bpm').textContent = bpm;
+    document.getElementById('sa-bpm-hint').textContent = bpmHint(bpm);
+    if (saState.metronome) saState.metronome.setBpm(bpm);
+    saState.tapTempo?.reset();
+  });
+
   // ── Keyboard shortcuts
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
-      if (!document.getElementById('edit-backdrop').hidden) { closeEdit(); return; }
-      if (!document.getElementById('player-backdrop').hidden) { closePlayer(); return; }
+      if (!document.getElementById('edit-backdrop').hidden)      { closeEdit(); return; }
+      if (!document.getElementById('player-backdrop').hidden)    { closePlayer(); return; }
+      if (!document.getElementById('sa-metro-backdrop').hidden)  { closeStandaloneMetro(); return; }
     }
-    // Space = toggle metronome when player is open
-    if (e.key === ' ' && !document.getElementById('player-backdrop').hidden) {
+    if (e.key === ' ') {
       const focused = document.activeElement;
-      if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'BUTTON')) return;
-      e.preventDefault();
-      document.getElementById('metro-toggle').click();
+      if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'BUTTON' || focused.tagName === 'TEXTAREA')) return;
+      if (!document.getElementById('player-backdrop').hidden) {
+        e.preventDefault();
+        document.getElementById('metro-toggle').click();
+      } else if (!document.getElementById('sa-metro-backdrop').hidden) {
+        e.preventDefault();
+        document.getElementById('sa-metro-toggle').click();
+      }
     }
   });
 }
