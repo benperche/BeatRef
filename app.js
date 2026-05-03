@@ -199,7 +199,7 @@ const SEED_SONGS = [
     id: 'seed-1',
     title: "Stayin' Alive",
     artist: 'Bee Gees',
-    bpm: 100,
+    bpm: 104,
     youtube: 'https://www.youtube.com/watch?v=I_izvAbhExY',
     notes: 'Famous for matching the ideal CPR chest compression rate.',
     createdAt: 0,
