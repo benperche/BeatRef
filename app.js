@@ -473,7 +473,7 @@ function openEdit(id = null) {
   document.getElementById('delete-btn').hidden = !song;
   document.getElementById('yt-preview').hidden = true;
   document.getElementById('yt-preview-inner').innerHTML = '';
-  document.getElementById('tap-feedback').hidden = true;
+  document.getElementById('tap-feedback').classList.remove('active');
   document.getElementById('tap-detected').textContent = '–';
   document.getElementById('tap-accept-btn').disabled = true;
   state.tapDetectedBpm = null;
@@ -486,13 +486,13 @@ function openEdit(id = null) {
     const detected = document.getElementById('tap-detected');
     const acceptBtn = document.getElementById('tap-accept-btn');
     if (bpm === null) {
-      fb.hidden = true;
+      fb.classList.remove('active');
       detected.textContent = '–';
       acceptBtn.disabled = true;
       state.tapDetectedBpm = null;
       return;
     }
-    fb.hidden = false;
+    fb.classList.add('active');
     detected.textContent = bpm;
     state.tapDetectedBpm = bpm;
     acceptBtn.disabled = count < 3;

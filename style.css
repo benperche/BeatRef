@@ -755,7 +755,7 @@ main {
   font-size: 0.8rem;
 }
 
-/* Tap feedback */
+/* Tap feedback — always occupies space so the Tap button never moves */
 .tap-feedback {
   background: rgba(124,92,252,0.08);
   border: 1px solid rgba(124,92,252,0.25);
@@ -765,6 +765,13 @@ main {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.tap-feedback.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .tap-bpm-display {
