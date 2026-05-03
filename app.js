@@ -61,14 +61,15 @@ function ytEmbedUrl(id, start = 0) {
 
 // ── Spotify helpers ───────────────────────────────────
 function parseSpotifyUrl(url) {
-  if (!url) return { id: null };
-  // handles /intl-xx/ variants and share params
+  if (!url) return { id: null, start: 0 };
   const m = url.match(/open\.spotify\.com\/(?:[a-z-]+\/)?track\/([A-Za-z0-9]+)/);
-  return { id: m ? m[1] : null };
+  if (!m) return { id: null, start: 0 };
+  const tMatch = url.match(/[?&]t=(\d+)/);
+  return { id: m[1], start: tMatch ? parseInt(tMatch[1], 10) : 0 };
 }
 
-function spotifyEmbedUrl(id) {
-  return `https://open.spotify.com/embed/track/${id}?utm_source=generator`;
+function spotifyEmbedUrl(id, start = 0) {
+  return `https://open.spotify.com/embed/track/${id}?utm_source=generator&t=${start}`;
 }
 
 // ── Precise Metronome (Web Audio API) ─────────────────
@@ -212,6 +213,7 @@ const SEED_SONGS = [
     title: "Stayin' Alive",
     artist: 'Bee Gees',
     bpm: 104,
+    spotify: 'https://open.spotify.com/track/5ubvP9oKmxLUVq506fgLhk?si=5e207567841a4b2c',
     youtube: 'https://www.youtube.com/watch?v=I_izvAbhExY',
     notes: 'Famous for matching the ideal CPR chest compression rate.',
     createdAt: 0,
@@ -221,6 +223,7 @@ const SEED_SONGS = [
     title: "We're Off to See the Wizard",
     artist: 'Judy Garland',
     bpm: 138,
+    spotify: 'https://open.spotify.com/track/7BPMn6970CBEZ8z5ZOd7Gf?si=08a7e5d68fac4a74&t=10',
     youtube: 'https://youtu.be/Mm3ypbAbLJ8?si=-LAm9gqbiUIFBBP-&t=2',
     youtubeStart: 2,
     notes: '',
@@ -231,6 +234,7 @@ const SEED_SONGS = [
     title: 'Eye of the Tiger',
     artist: 'Survivor',
     bpm: 109,
+    spotify: 'https://open.spotify.com/track/2KH16WveTQWT6KOG9Rg6e2?si=7733657e09ee4c5e',
     youtube: 'https://www.youtube.com/watch?v=btPJPFnesV4',
     notes: '',
     createdAt: 2,
@@ -240,6 +244,7 @@ const SEED_SONGS = [
     title: 'Billie Jean',
     artist: 'Michael Jackson',
     bpm: 117,
+    spotify: 'https://open.spotify.com/track/7J1uxwnxfQLu4APicE5Rnj?si=39e8322cfc9a4c72',
     youtube: 'https://www.youtube.com/watch?v=Zi_XLOBDo_Y',
     notes: '',
     createdAt: 3,
@@ -249,6 +254,7 @@ const SEED_SONGS = [
     title: 'Mr. Brightside',
     artist: 'The Killers',
     bpm: 148,
+    spotify: 'https://open.spotify.com/track/003vvx7Niy0yvhvHt4a68B?si=795a024f0286416a',
     youtube: 'https://www.youtube.com/watch?v=gGdGFtwCNBE',
     notes: '',
     createdAt: 4,
@@ -258,19 +264,21 @@ const SEED_SONGS = [
     title: 'Bohemian Rhapsody',
     artist: 'Queen',
     bpm: 76,
+    spotify: 'https://open.spotify.com/track/2OBofMJx94NryV2SK8p8Zf?si=0b789c1b915f4ade',
     youtube: 'https://www.youtube.com/watch?v=fJ9rUzIMcZQ',
     notes: 'BPM applies to the opening ballad section.',
     createdAt: 5,
   },
   {
-  id: 'seed-7',
-  title: 'In My Room',
-  artist: 'Jacob Collier',
-  bpm: 62,
-  youtube: 'https://youtu.be/7dSFMUcTuhU?si=_355HCwxGTDdZ4cP',
-  notes: '',
-  createdAt: 6,
-},
+    id: 'seed-7',
+    title: 'In My Room',
+    artist: 'Jacob Collier',
+    bpm: 62,
+    spotify: 'https://open.spotify.com/track/1yGl3V3BiRSaVnuFC93CYd?si=a4a6a4c52d7f4dc7',
+    youtube: 'https://youtu.be/7dSFMUcTuhU?si=_355HCwxGTDdZ4cP',
+    notes: '',
+    createdAt: 6,
+  },
 ];
 
 function loadSongs() {
@@ -416,9 +424,11 @@ function openPlayer(id) {
   const ytOpenLink  = document.getElementById('yt-open-link');
   const spOpenLink  = document.getElementById('spotify-open-link');
 
+  const spStart = song.spotifyStart ?? parseSpotifyUrl(song.spotify).start;
+
   // Spotify embed takes priority (no ads); YouTube embed shown as fallback
   if (spotifyId) {
-    spotifyWrap.innerHTML = `<iframe src="${spotifyEmbedUrl(spotifyId)}" height="152" frameborder="0" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+    spotifyWrap.innerHTML = `<iframe src="${spotifyEmbedUrl(spotifyId, spStart)}" height="152" frameborder="0" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
     spotifyWrap.hidden = false;
     ytWrap.innerHTML = '';
     ytWrap.hidden = true;
@@ -526,6 +536,7 @@ function openEdit(id = null) {
   document.getElementById('edit-bpm').value = song?.bpm || '';
   document.getElementById('edit-youtube').value = song?.youtube || '';
   document.getElementById('edit-spotify').value = song?.spotify || '';
+  document.getElementById('edit-spotify-start').value = song?.spotifyStart ?? '';
   document.getElementById('edit-notes').value = song?.notes || '';
 
   document.getElementById('edit-start').value = song?.youtubeStart ?? '';
@@ -591,6 +602,9 @@ function saveSong(e) {
   const youtubeStart = Number.isFinite(manualStart) && manualStart >= 0 ? manualStart : autoStart;
 
   const spotifyUrl = document.getElementById('edit-spotify').value.trim();
+  const manualSpStart = parseInt(document.getElementById('edit-spotify-start').value, 10);
+  const autoSpStart = parseSpotifyUrl(spotifyUrl).start;
+  const spotifyStart = Number.isFinite(manualSpStart) && manualSpStart >= 0 ? manualSpStart : autoSpStart;
 
   const song = {
     id:          state.editSongId || `song-${Date.now()}`,
@@ -600,6 +614,7 @@ function saveSong(e) {
     youtube:     youtubeUrl,
     youtubeStart,
     spotify:     spotifyUrl,
+    spotifyStart,
     notes:       document.getElementById('edit-notes').value.trim(),
     createdAt:   state.editSongId
                    ? (state.songs.find(s => s.id === state.editSongId)?.createdAt || Date.now())
