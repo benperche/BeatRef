@@ -843,7 +843,7 @@ main {
 }
 
 /* ── Standalone Metronome Modal ──────────────────────── */
-.sa-metro-modal { max-width: 340px; }
+.sa-metro-modal { max-width: 420px; }
 
 .sa-metro-body {
   padding: 24px 28px 32px;
