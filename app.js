@@ -424,40 +424,37 @@ function openPlayer(id) {
   const ytOpenLink  = document.getElementById('yt-open-link');
   const spOpenLink  = document.getElementById('spotify-open-link');
 
-  const spStart = song.spotifyStart ?? parseSpotifyUrl(song.spotify).start;
+  const spStart   = song.spotifyStart ?? parseSpotifyUrl(song.spotify).start;
+  const mediaInfo = document.getElementById('media-info');
 
-  // Spotify embed takes priority (no ads); YouTube embed shown as fallback
+  // Spotify — always show when available
   if (spotifyId) {
     spotifyWrap.innerHTML = `<iframe src="${spotifyEmbedUrl(spotifyId, spStart)}" height="152" frameborder="0" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
     spotifyWrap.hidden = false;
-    ytWrap.innerHTML = '';
-    ytWrap.hidden = true;
-    noVid.hidden = true;
     spOpenLink.href = `https://open.spotify.com/track/${spotifyId}`;
     spOpenLink.hidden = false;
-  } else if (ytId) {
-    ytWrap.innerHTML = `<iframe src="${ytEmbedUrl(ytId, ytStart)}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
-    ytWrap.hidden = false;
-    spotifyWrap.innerHTML = '';
-    spotifyWrap.hidden = true;
-    noVid.hidden = true;
-    spOpenLink.hidden = true;
   } else {
-    ytWrap.innerHTML = '';
-    ytWrap.hidden = true;
     spotifyWrap.innerHTML = '';
     spotifyWrap.hidden = true;
-    noVid.hidden = false;
     spOpenLink.hidden = true;
   }
 
+  // YouTube — always show when available
   if (ytId) {
+    ytWrap.innerHTML = `<iframe src="${ytEmbedUrl(ytId, ytStart)}" allowfullscreen allow="autoplay; encrypted-media"></iframe>`;
+    ytWrap.hidden = false;
     const ytUrl = `https://www.youtube.com/watch?v=${ytId}${ytStart > 0 ? `&t=${ytStart}` : ''}`;
     ytOpenLink.href = ytUrl;
     ytOpenLink.hidden = false;
   } else {
+    ytWrap.innerHTML = '';
+    ytWrap.hidden = true;
     ytOpenLink.hidden = true;
   }
+
+  noVid.hidden = !!(spotifyId || ytId);
+  // Info note only shown when both are present — explains Spotify preview behaviour
+  mediaInfo.hidden = !(spotifyId && ytId);
 
   // Metronome setup
   const bpm = song.bpm;
