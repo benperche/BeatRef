@@ -153,6 +153,19 @@ class TapTempo {
   }
 }
 
+// ── Tempo groups ──────────────────────────────────────
+const TEMPO_GROUPS = [
+  { label: 'Largo',       sub: 'Very slow',         min: 0,   max: 59  },
+  { label: 'Adagio',      sub: 'Slow & stately',    min: 60,  max: 71  },
+  { label: 'Andante',     sub: 'Walking pace',       min: 72,  max: 83  },
+  { label: 'Moderato',    sub: 'Moderate',           min: 84,  max: 107 },
+  { label: 'Allegretto',  sub: 'Moderately fast',    min: 108, max: 119 },
+  { label: 'Allegro',     sub: 'Fast',               min: 120, max: 155 },
+  { label: 'Vivace',      sub: 'Lively & fast',      min: 156, max: 175 },
+  { label: 'Presto',      sub: 'Very fast',          min: 176, max: 199 },
+  { label: 'Prestissimo', sub: 'Extremely fast',     min: 200, max: Infinity },
+];
+
 // ── BPM descriptive hint ──────────────────────────────
 function bpmHint(bpm) {
   if (bpm < 60)  return 'Largo – very slow';
@@ -278,12 +291,41 @@ function filteredSongs() {
 }
 
 // ── Render Song Grid ──────────────────────────────────
+function makeCard(song) {
+  const hasVideo = !!extractYTId(song.youtube);
+  const card = document.createElement('div');
+  card.className = 'song-card';
+  card.dataset.id = song.id;
+  card.innerHTML = `
+    <div class="card-bpm-badge">
+      <span class="card-bpm-value">${song.bpm}</span>
+      <span class="card-bpm-unit">bpm</span>
+    </div>
+    <div class="card-info">
+      <div class="card-title">${escHtml(song.title)}</div>
+      ${song.artist ? `<div class="card-artist">${escHtml(song.artist)}</div>` : ''}
+    </div>
+    <div class="card-footer">
+      <span class="card-has-video ${hasVideo ? 'linked' : ''}">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
+        ${hasVideo ? 'Video linked' : 'No video'}
+      </span>
+      <span class="card-play-hint">Open ›</span>
+    </div>
+  `;
+  card.addEventListener('click', () => openPlayer(song.id));
+  return card;
+}
+
 function renderGrid() {
   const grid = document.getElementById('song-grid');
   const emptyState = document.getElementById('empty-state');
   const songs = filteredSongs();
+  const sort = state.filter.sort;
+  const useGroups = sort === 'bpm-asc' || sort === 'bpm-desc';
 
   grid.innerHTML = '';
+  grid.classList.toggle('grouped', useGroups);
 
   if (songs.length === 0) {
     emptyState.hidden = false;
@@ -291,31 +333,30 @@ function renderGrid() {
   }
   emptyState.hidden = true;
 
-  songs.forEach(song => {
-    const hasVideo = !!extractYTId(song.youtube);
-    const card = document.createElement('div');
-    card.className = 'song-card';
-    card.dataset.id = song.id;
-    card.innerHTML = `
-      <div class="card-bpm-badge">
-        <span class="card-bpm-value">${song.bpm}</span>
-        <span class="card-bpm-unit">bpm</span>
-      </div>
-      <div class="card-info">
-        <div class="card-title">${escHtml(song.title)}</div>
-        ${song.artist ? `<div class="card-artist">${escHtml(song.artist)}</div>` : ''}
-      </div>
-      <div class="card-footer">
-        <span class="card-has-video ${hasVideo ? 'linked' : ''}">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"/></svg>
-          ${hasVideo ? 'Video linked' : 'No video'}
-        </span>
-        <span class="card-play-hint">Open ›</span>
-      </div>
-    `;
-    card.addEventListener('click', () => openPlayer(song.id));
-    grid.appendChild(card);
-  });
+  if (useGroups) {
+    const groups = sort === 'bpm-desc' ? [...TEMPO_GROUPS].reverse() : TEMPO_GROUPS;
+    groups.forEach(group => {
+      const groupSongs = songs.filter(s => s.bpm >= group.min && s.bpm <= group.max);
+      if (groupSongs.length === 0) return;
+
+      const rangeText = group.max === Infinity ? `${group.min}+ BPM` : `${group.min}–${group.max} BPM`;
+      const section = document.createElement('div');
+      section.className = 'tempo-section';
+      section.innerHTML = `
+        <div class="tempo-section-header">
+          <span class="tempo-label">${group.label}</span>
+          <span class="tempo-sub">${group.sub}</span>
+          <span class="tempo-range">${rangeText}</span>
+        </div>
+        <div class="tempo-cards"></div>
+      `;
+      const cardsDiv = section.querySelector('.tempo-cards');
+      groupSongs.forEach(song => cardsDiv.appendChild(makeCard(song)));
+      grid.appendChild(section);
+    });
+  } else {
+    songs.forEach(song => grid.appendChild(makeCard(song)));
+  }
 }
 
 function escHtml(str) {
@@ -363,6 +404,8 @@ function openPlayer(id) {
 
   setMetroStopped();
 
+  history.replaceState({}, '', `?bpm=${song.bpm}`);
+
   document.getElementById('player-backdrop').hidden = false;
   document.body.style.overflow = 'hidden';
 }
@@ -374,9 +417,8 @@ function closePlayer() {
   document.getElementById('player-backdrop').hidden = true;
   document.body.style.overflow = '';
   state.playerSongId = null;
-
-  // Destroy YouTube iframe to stop playback
   document.getElementById('youtube-player-wrap').innerHTML = '';
+  history.replaceState({}, '', location.pathname);
 }
 
 function pulseBeat() {
@@ -543,6 +585,53 @@ function clearYTPreview() {
   document.getElementById('yt-preview').hidden = true;
 }
 
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg, ms = 2000) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), ms);
+}
+
+// ── Export ────────────────────────────────────────────
+function exportLibrary() {
+  const data = JSON.stringify(DB.getAll(), null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `beatref-library-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Import ────────────────────────────────────────────
+function importLibrary(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    let songs;
+    try {
+      songs = JSON.parse(e.target.result);
+      if (!Array.isArray(songs)) throw new Error();
+    } catch {
+      showToast('Invalid file — expected a BeatRef JSON export.');
+      return;
+    }
+    let added = 0, updated = 0;
+    songs.forEach(song => {
+      if (!song.id || !song.title || !song.bpm) return;
+      const existing = state.songs.find(s => s.id === song.id);
+      existing ? updated++ : added++;
+      DB.save(song);
+    });
+    loadSongs();
+    renderGrid();
+    showToast(`Imported ${added} new, ${updated} updated.`);
+  };
+  reader.readAsText(file);
+}
+
 // ── Debounce ──────────────────────────────────────────
 function debounce(fn, ms) {
   let t;
@@ -552,6 +641,20 @@ function debounce(fn, ms) {
 // ── Wire Up Events ────────────────────────────────────
 function init() {
   loadSongs();
+
+  // Apply URL params before first render
+  const params = new URLSearchParams(location.search);
+  const urlBpm = params.get('bpm');
+  if (urlBpm) {
+    const bpm = parseInt(urlBpm, 10);
+    if (bpm >= 20 && bpm <= 300) {
+      document.getElementById('bpm-min').value = bpm;
+      document.getElementById('bpm-max').value = bpm;
+      state.filter.bpmMin = bpm;
+      state.filter.bpmMax = bpm;
+    }
+  }
+
   renderGrid();
 
   // Add song buttons
@@ -676,6 +779,29 @@ function init() {
 
   document.getElementById('preview-yt-btn').addEventListener('click', previewYT);
   document.getElementById('clear-preview-btn').addEventListener('click', clearYTPreview);
+
+  // ── Export / Import
+  document.getElementById('export-btn').addEventListener('click', exportLibrary);
+
+  document.getElementById('import-btn').addEventListener('click', () => {
+    document.getElementById('import-file').value = '';
+    document.getElementById('import-file').click();
+  });
+
+  document.getElementById('import-file').addEventListener('change', e => {
+    if (e.target.files[0]) importLibrary(e.target.files[0]);
+  });
+
+  // ── Copy link (share BPM)
+  document.getElementById('copy-link-btn').addEventListener('click', () => {
+    const url = location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copy-link-btn');
+      btn.classList.add('copied');
+      showToast('Link copied to clipboard');
+      setTimeout(() => btn.classList.remove('copied'), 2000);
+    });
+  });
 
   // ── Keyboard shortcuts
   document.addEventListener('keydown', e => {

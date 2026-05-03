@@ -119,7 +119,7 @@ header {
   pointer-events: none;
 }
 
-.search-wrap input {
+.search-wrap input[type="search"] {
   width: 100%;
   padding: 8px 12px 8px 34px;
 }
@@ -190,6 +190,11 @@ input[type="number"] {
 }
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+/* Safari adds a built-in search icon that shifts placeholder text */
+input[type="search"] { -webkit-appearance: none; appearance: none; }
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 /* ── Buttons ─────────────────────────────────────────── */
 .btn {
@@ -278,6 +283,19 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 }
 .btn-metro.playing:hover { background: var(--warm); }
 
+/* ── Header actions ──────────────────────────────────── */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-lib-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* ── Main / Song Grid ────────────────────────────────── */
 main {
   max-width: 1200px;
@@ -286,6 +304,46 @@ main {
 }
 
 .song-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* ── Tempo Groups ────────────────────────────────────── */
+.song-grid.grouped {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.tempo-section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.tempo-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tempo-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.tempo-range {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.tempo-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
@@ -772,4 +830,47 @@ main {
   gap: 10px;
   align-items: center;
   padding-top: 4px;
+}
+
+/* ── Copy-link button ────────────────────────────────── */
+.btn-copy-link {
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-family: inherit;
+  transition: color var(--transition), background var(--transition);
+}
+.btn-copy-link svg { width: 13px; height: 13px; }
+.btn-copy-link:hover { color: var(--accent-light); background: rgba(124,92,252,0.1); }
+.btn-copy-link.copied { color: var(--green); }
+
+/* ── Toast ───────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 99px;
+  box-shadow: var(--shadow);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
