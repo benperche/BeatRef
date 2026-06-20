@@ -195,16 +195,10 @@ const TEMPO_GROUPS = [
 ];
 
 // ── BPM descriptive hint ──────────────────────────────
+// Derived from TEMPO_GROUPS so the player hint and grid sections never disagree.
 function bpmHint(bpm) {
-  if (bpm < 60)  return 'Largo – very slow';
-  if (bpm < 72)  return 'Adagio – slow and stately';
-  if (bpm < 84)  return 'Andante – walking pace';
-  if (bpm < 96)  return 'Moderato – moderate';
-  if (bpm < 108) return 'Allegretto – moderately fast';
-  if (bpm < 132) return 'Allegro – fast';
-  if (bpm < 156) return 'Vivace – lively and fast';
-  if (bpm < 176) return 'Presto – very fast';
-  return 'Prestissimo – extremely fast';
+  const g = TEMPO_GROUPS.find(g => bpm >= g.min && bpm <= g.max) || TEMPO_GROUPS[0];
+  return `${g.label} – ${g.sub.toLowerCase()}`;
 }
 
 // ── App State ─────────────────────────────────────────
