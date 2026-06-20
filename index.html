@@ -222,11 +222,13 @@
         <button class="btn btn-tap" id="sa-tap-btn">Tap Tempo</button>
 
         <div class="tap-feedback" id="sa-tap-feedback">
-          <div class="tap-bpm-display">
-            <span id="sa-tap-detected">–</span> <span>BPM detected</span>
+          <div class="sa-tap-row">
+            <div class="tap-bpm-display">
+              <span id="sa-tap-detected">–</span> <span>BPM detected</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" id="sa-tap-accept-btn" disabled>Use this BPM</button>
           </div>
           <p class="tap-hint">Keep tapping to refine · stops after 2s pause</p>
-          <button type="button" class="btn btn-ghost btn-sm" id="sa-tap-accept-btn" disabled>Use this BPM</button>
         </div>
 
         <p class="sa-space-hint">Space to start / stop</p>
@@ -341,6 +343,6 @@
   </footer>
 
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="app.js?v=1.1"></script>
+  <script src="app.js?v=1.2"></script>
 </body>
 </html>

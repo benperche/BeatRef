@@ -854,11 +854,39 @@ main {
 }
 
 /* Tap feedback panel is always visible in the standalone metro so the
-   button never shifts position and "Use this BPM" stays reachable */
+   button never shifts position and "Use this BPM" stays reachable.
+   A fixed two-row layout + a reserved-width digit slot means the panel's
+   size never changes when a BPM is detected, so the Tap button above it
+   stays perfectly still while you keep tapping in time. */
 #sa-tap-feedback {
   opacity: 1;
   pointer-events: auto;
   width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.sa-tap-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Reserve a fixed slot for the digits so going from "–" to "124" never
+   widens the row (which used to wrap and resize the whole panel). */
+#sa-tap-feedback .tap-bpm-display span:first-child {
+  font-size: 1.25rem;
+  min-width: 3ch;
+  text-align: right;
+}
+
+#sa-tap-feedback .tap-hint {
+  flex: none;
+  text-align: center;
+  margin: 0;
 }
 
 .sa-space-hint {
