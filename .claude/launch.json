@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "BeatRef",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "-l", "3847", "."],
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "3847"],
       "port": 3847
     }
   ]

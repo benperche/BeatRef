@@ -198,6 +198,7 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 /* ── Buttons ─────────────────────────────────────────── */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -288,12 +289,64 @@ input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .header-lib-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* Collapse header buttons to icon-only as the viewport narrows, so the
+   header never forces the page to scroll sideways on mobile. Labels are
+   clipped rather than display:none so screen readers still announce them. */
+.btn-label {
+  display: inline;
+}
+
+@media (max-width: 840px) {
+  .header-lib-actions .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .header-lib-actions .btn {
+    padding: 7px;
+  }
+}
+
+@media (max-width: 460px) {
+  #add-song-btn .btn-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  #add-song-btn {
+    padding: 8px;
+  }
+  .header-inner {
+    padding: 0 14px;
+  }
+  .header-right { gap: 6px; }
+  .header-lib-actions { gap: 4px; }
+  .logo { gap: 8px; min-width: 0; }
+  .logo-text {
+    font-size: 1.1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /* ── Main / Song Grid ────────────────────────────────── */
